@@ -13,7 +13,7 @@ namespace SimpleCmdLine
                 Description = "Console app to demonstrate System.CommandLine"
             };
 
-            rootCommand.Add(new Option<string>("--name", description: "Name of person to greet"));
+            rootCommand.Add(new Option<string>("--name", description: "Name of person to greet") { IsRequired=true});
 
             rootCommand.Handler = CommandHandler.Create<string>(RootCmd);
 
