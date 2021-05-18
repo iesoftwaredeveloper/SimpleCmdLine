@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CommandLine;
 
 namespace SimpleCmdLine
 {
@@ -6,6 +7,8 @@ namespace SimpleCmdLine
     {
         static void Main(string[] args)
         {
+            var rootCommand = new RootCommand();
+
             Console.WriteLine("Hello World!");
         }
     }
