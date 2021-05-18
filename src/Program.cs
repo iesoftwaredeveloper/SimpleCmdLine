@@ -1,14 +1,26 @@
 ﻿using System;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 
 namespace SimpleCmdLine
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            var rootCommand = new RootCommand();
+            var rootCommand = new RootCommand()
+            {
+                Description = "Console app to demonstrate System.CommandLine"
+                //new Option(alias: "--name", description: "Name of person to greet") {IsRequired=true}
+            };
 
+            rootCommand.Handler = CommandHandler.Create(RootCmd);
+
+            return rootCommand.Invoke(args);
+        }
+
+        public static void RootCmd()
+        {
             Console.WriteLine("Hello World!");
         }
     }
