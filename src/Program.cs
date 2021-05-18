@@ -11,17 +11,18 @@ namespace SimpleCmdLine
             var rootCommand = new RootCommand()
             {
                 Description = "Console app to demonstrate System.CommandLine"
-                //new Option(alias: "--name", description: "Name of person to greet") {IsRequired=true}
             };
 
-            rootCommand.Handler = CommandHandler.Create(RootCmd);
+            rootCommand.Add(new Option<string>("--name", description: "Name of person to greet"));
+
+            rootCommand.Handler = CommandHandler.Create<string>(RootCmd);
 
             return rootCommand.Invoke(args);
         }
 
-        public static void RootCmd()
+        public static void RootCmd(string name = "World")
         {
-            Console.WriteLine("Hello World!");
+            Console.WriteLine($"Hello {name}!");
         }
     }
 }
