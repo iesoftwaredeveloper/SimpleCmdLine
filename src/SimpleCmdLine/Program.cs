@@ -4,9 +4,9 @@ using System.CommandLine.Invocation;
 
 namespace SimpleCmdLine
 {
-    class Program
+    public class Program
     {
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
             var rootCommand = new RootCommand()
             {
