@@ -1,6 +1,11 @@
-using System;
-using Xunit;
 using SimpleCmdLine;
+using System;
+using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.IO;
+using Xunit;
+using System.CommandLine.Parsing;
 
 namespace SimpleCmdLine.Tests
 {
@@ -9,22 +14,39 @@ namespace SimpleCmdLine.Tests
         [Fact]
         public void NoArgs_ReturnsFail()
         {
-            string[] args = new string[]{};
-            var result = Program.Main(args);
-            Assert.Equal(1, result);
+            string[] args = new string[] { };
+            
+            RootCommand rootCommand = Program.AddOptions(args);
+
+            var result = rootCommand.Parse(args);
+            IReadOnlyCollection<ParseError> Errors = result.Errors;
+            Assert.Equal(1, Errors.Count);
         }
 
         [Fact]
         public void OptionNoArgument_ReturnsFail()
         {
-            string[] args = new string[]{ "--name" };
-            var result = Program.Main(args);
-            Assert.Equal(1, result);
+            string[] args = new string[] { "--name" };
+
+            RootCommand rootCommand = Program.AddOptions(args);
+
+            var result = rootCommand.Parse(args);
+            IReadOnlyCollection<ParseError> Errors = result.Errors;
+            Assert.Equal(1, Errors.Count);
         }
 
         [Fact]
         public void OptionWithArgument_ReturnsFail()
         {
+            string[] args = new string[] { "--name", "Success" };
+
+            RootCommand rootCommand = Program.AddOptions(args);
+
+            var result = rootCommand.Parse(args);
+            IReadOnlyCollection<ParseError> Errors = result.Errors;
+            Assert.Equal(0, Errors.Count);
+        }
+
             string[] args = new string[]{ "--name", "Success"};
             var result = Program.Main(args);
             Assert.Equal(0, result);
