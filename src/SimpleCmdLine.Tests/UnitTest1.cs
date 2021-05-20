@@ -47,9 +47,5 @@ namespace SimpleCmdLine.Tests
             Assert.Equal(0, Errors.Count);
         }
 
-            string[] args = new string[]{ "--name", "Success"};
-            var result = Program.Main(args);
-            Assert.Equal(0, result);
-        }
     }
 }
