@@ -17,12 +17,14 @@ namespace SimpleCmdLine
             IConsole console = new CustomConsole(StandardStreamWriter.Create(tw));
 
             var rootCommand = AddOptions(args);
-            rootCommand.Handler = CommandHandler.Create((ParseResult parseResult, IConsole console) =>
+            rootCommand.Handler = CommandHandler.Create((ParseResult parseResult, IConsole console, RootOptions options) =>
                 {
-                    cmdResult(parseResult, console);
-                    RootCmd(console, parseResult.ValueForOption("--name").ToString());
-                    console.Out.WriteLine($"--opt-bool={parseResult.ValueForOption<bool>("--opt-bool")}");
-                    console.Out.WriteLine($"--opt-string={parseResult.ValueForOption<IList<string>>("--opt-string")?.Aggregate((a, b) => $"{a}, {b}")}");
+                    // Bug fix work-around. https://github.com/dotnet/command-line-api/issues/1284
+                    if (parseResult.HasOption("--opt-decimal"))
+                    {
+                        options.SetOptDecimal(parseResult.ValueForOption<decimal>("--opt-decimal"));
+                    }
+                    cmdResult(parseResult, console, options);
                 });
 
             await rootCommand.InvokeAsync(args, console);
@@ -30,9 +32,15 @@ namespace SimpleCmdLine
             return 0;
         }
 
-        public static void cmdResult(ParseResult parseResult, IConsole console)
+        public static void cmdResult(ParseResult parseResult, IConsole console, RootOptions opt)
         {
             console.Out.WriteLine($"{parseResult}");
+            console.Out.WriteLine($"--name {opt.Name}");
+            console.Out.WriteLine($"--opt-int {opt.OptInt}");
+            console.Out.WriteLine($"--opt-decimal {opt.OptDecimal}");
+            console.Out.WriteLine($"--opt-bool={opt.OptBool}");
+            if (opt.OptString.Count() > 0)
+                console.Out.WriteLine($"--opt-string={opt.OptString.Aggregate((a, b) => $"{a}, {b}")}");
         }
 
         public static void RootCmd(IConsole console, string name = "World")
