@@ -5,7 +5,8 @@ using System.CommandLine.Parsing;
 using System.CommandLine.IO;
 using System.IO;
 using System.Threading.Tasks;
-
+using System.Collections.Generic;
+using System.Linq;
 namespace SimpleCmdLine
 {
     public class Program
@@ -20,10 +21,13 @@ namespace SimpleCmdLine
                 {
                     cmdResult(parseResult, console);
                     RootCmd(console, parseResult.ValueForOption("--name").ToString());
-                    Console.Write(StdOut); // Output anything collected to standard console.
+                    console.Out.WriteLine($"--opt-bool={parseResult.ValueForOption<bool>("--opt-bool")}");
+                    console.Out.WriteLine($"--opt-string={parseResult.ValueForOption<IList<string>>("--opt-string")?.Aggregate((a, b) => $"{a}, {b}")}");
                 });
 
-            return await rootCommand.InvokeAsync(args, console);
+            await rootCommand.InvokeAsync(args, console);
+            Console.Write(StdOut); // Output anything collected to standard console.
+            return 0;
         }
 
         public static void cmdResult(ParseResult parseResult, IConsole console)
@@ -55,6 +59,10 @@ namespace SimpleCmdLine
             // Here we pass an array of aliases rather than adding an alias after the initial option is created.
             // We also provide a default value of 47
             rootCommand.Add(new Option<int>(new[] { "--opt-int", "-i" }, description: "An integer option", getDefaultValue: () => { return 47; }));
+
+            rootCommand.Add(new Option<decimal>(new[] { "--opt-decimal" }, description: "A decimal option"));
+            rootCommand.Add(new Option<bool>(new[] { "--opt-bool" }, description: "A boolean option"));
+            rootCommand.Add(new Option<string>("--opt-string", description: "A string option", arity: new ArgumentArity(1, 2)));
 
             return rootCommand;
         }
