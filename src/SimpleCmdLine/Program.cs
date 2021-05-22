@@ -14,17 +14,33 @@ namespace SimpleCmdLine
         public static async Task<int> Main(string[] args)
         {
             // Create our own console so we can control where the output is written to.
-            IConsole console = new CustomConsole(StandardStreamWriter.Create(tw));
+            IConsole console = new CustomConsole(StandardStreamWriter.Create(tw), StandardStreamWriter.Create(tw));
 
             var rootCommand = AddOptions(args);
+
             rootCommand.Handler = CommandHandler.Create((ParseResult parseResult, IConsole console, RootOptions options) =>
                 {
+                    if (parseResult == null)
+                    {
+                        Console.WriteLine("No parseResult for root");
+                        return;
+                    }
+                    if (console == null)
+                    {
+                        Console.WriteLine("No console for root");
+                        return;
+                    }
+                    if (options == null)
+                    {
+                        Console.WriteLine("No options for root");
+                        return;
+                    }
                     // Bug fix work-around. https://github.com/dotnet/command-line-api/issues/1284
                     if (parseResult.HasOption("--opt-decimal"))
                     {
                         options.SetOptDecimal(parseResult.ValueForOption<decimal>("--opt-decimal"));
                     }
-                    cmdResult(parseResult, console, options);
+                    rootHandler(parseResult, console, options);
                 });
 
             await rootCommand.InvokeAsync(args, console);
@@ -32,8 +48,9 @@ namespace SimpleCmdLine
             return 0;
         }
 
-        public static void cmdResult(ParseResult parseResult, IConsole console, RootOptions opt)
+        public static void rootHandler(ParseResult parseResult, IConsole console, RootOptions opt)
         {
+            console.Out.WriteLine("Parsing root");
             console.Out.WriteLine($"{parseResult}");
             console.Out.WriteLine($"--name {opt.Name}");
             console.Out.WriteLine($"--opt-int {opt.OptInt}");
@@ -43,9 +60,27 @@ namespace SimpleCmdLine
                 console.Out.WriteLine($"--opt-string={opt.OptString.Aggregate((a, b) => $"{a}, {b}")}");
         }
 
-        public static void RootCmd(IConsole console, string name = "World")
+        public static void addHandler(ParseResult parseResult, IConsole console, int operand1, int operand2, IList<int> operands)
         {
-            console.Out.WriteLine($"Hello {name}!");
+            console.Out.WriteLine("Processing add");
+
+            console.Out.WriteLine((operands.Sum()).ToString());
+            console.Out.WriteLine((operand1+operand2).ToString());
+        }
+
+        public static void subtractHandler(ParseResult parseResult, IConsole console, IList<int> operands)
+        {
+            console.Out.WriteLine("Processing subtraction");
+
+            if(operands.Count == 0)
+                return;
+
+            if(operands.Count == 1)
+            {
+                operands = operands.Prepend(0).ToList();
+            }
+            var difference = operands.Aggregate<int>((total, next) =>  total - next);
+            console.Out.WriteLine(difference.ToString());
         }
 
         public static RootCommand AddOptions(string[] args)
@@ -71,6 +106,28 @@ namespace SimpleCmdLine
             rootCommand.Add(new Option<decimal>(new[] { "--opt-decimal" }, description: "A decimal option"));
             rootCommand.Add(new Option<bool>(new[] { "--opt-bool" }, description: "A boolean option"));
             rootCommand.Add(new Option<string>("--opt-string", description: "A string option", arity: new ArgumentArity(1, 2)));
+
+            var addCommand = new Command("add");
+            var subtractCommand = new Command("subtract");
+
+            addCommand.AddArgument(new Argument<int>("Operand1"));
+            addCommand.AddArgument(new Argument<int>("Operand2"));
+            addCommand.Add(new Option<int[]>("--operands", description: "A list of numbers to sum.", arity: ArgumentArity.OneOrMore));
+
+            addCommand.Handler = CommandHandler.Create((ParseResult parseResult, IConsole console, int operand1, int operand2, IList<int> operands) =>
+            {
+                addHandler(parseResult, console, operand1, operand2, operands);
+            });
+
+            subtractCommand.Add(new Option<int[]>("--operands", description: "A list of numbers to subtract.", arity: ArgumentArity.OneOrMore) { IsRequired = true});
+            
+            subtractCommand.Handler = CommandHandler.Create((ParseResult parseResult, IConsole console, IList<int> operands) =>
+            {
+                subtractHandler(parseResult, console, operands);
+            });
+
+            rootCommand.AddCommand(addCommand);
+            rootCommand.AddCommand(subtractCommand);
 
             return rootCommand;
         }
