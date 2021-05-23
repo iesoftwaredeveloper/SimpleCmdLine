@@ -1,5 +1,7 @@
 # SimpleCmdLine
 
+[![.NET CI](https://github.com/iesoftwaredeveloper/SimpleCmdLine/actions/workflows/dotnet.yml/badge.svg?branch=main&event=push)](https://github.com/iesoftwaredeveloper/SimpleCmdLine/actions/workflows/dotnet.yml)
+
 ## What is My Project?
 
 This is a sample .NET 5 application that is intended to demonstrate System.CommandLine and how to use it.
